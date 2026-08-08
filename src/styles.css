@@ -40,6 +40,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand-copy strong { font-size: 18px; letter-spacing: -.03em; }
 .brand-copy small { margin-top: 5px; font-size: 9px; color: rgba(150,201,255,.72); text-transform: uppercase; letter-spacing: .18em; }
 .header-actions { display: flex; gap: 8px; }
+.language-switcher { min-height: 38px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: rgba(232,240,255,.76); background: rgba(255,255,255,.045); }
+.language-switcher svg { width: 16px; height: 16px; color: #75b8ff; }
+.language-switcher select { min-width: 76px; border: 0; outline: 0; color: inherit; background: transparent; cursor: pointer; font-size: 12px; font-weight: 650; }
+.language-switcher select option { color: #111827; background: white; }
+.language-switcher-compact { min-height: 36px; padding-inline: 9px; }
 .site-footer { width: min(1200px, calc(100% - 40px)); margin: auto; padding: 24px 0; border-top: 1px solid var(--line); color: rgba(255,255,255,.38); font-size: 12px; display: flex; justify-content: space-between; gap: 20px; }
 
 .button { min-height: 46px; border: 1px solid transparent; border-radius: 12px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; color: white; font-weight: 650; font-size: 14px; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease, opacity .2s ease; }
@@ -166,6 +171,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .page-loader span { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,.12); border-top-color: #489cff; border-radius: 50%; animation: spin .8s linear infinite; }
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+html[dir="rtl"] body { direction: rtl; }
+html[dir="rtl"] .auth-card,
+html[dir="rtl"] .auth-visual-content,
+html[dir="rtl"] .registration-page,
+html[dir="rtl"] .message-card { text-align: right; }
+html[dir="rtl"] .input-ltr,
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"] { direction: ltr; text-align: left; }
+html[dir="rtl"] .input-wrap svg { margin-left: 0; margin-right: 14px; }
+html[dir="rtl"] .md\:text-right { text-align: left; }
 
 @media (max-width: 900px) {
   .step-grid { grid-template-columns: 1fr; }

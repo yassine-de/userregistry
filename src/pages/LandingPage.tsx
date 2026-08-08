@@ -18,6 +18,9 @@ import howImg from "../assets/scalers-howitworks.jpg";
 import systemImg from "../assets/scalers-system.jpg";
 import visionImg from "../assets/scalers-vision.jpg";
 import ctaImg from "../assets/scalers-cta.jpg";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { useI18n } from "../contexts/i18n";
+import type { Language } from "../i18n/translations";
 
 /* ─── Fade-in-on-scroll hook ─── */
 function useInView(threshold = 0.15) {
@@ -43,7 +46,7 @@ function Reveal({ children, className = "", id, delay = 0 }: { children: React.R
       ref={ref}
       id={id}
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-[900ms] ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"} ${className}`}
+      className={`transition-all [transition-duration:900ms] ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"} ${className}`}
     >
       {children}
     </section>
@@ -94,8 +97,104 @@ const systemFeatures = [
   { icon: BarChart3, title: "Analytics", desc: "Confirmation, delivery and finance dashboards in one place." },
 ];
 
+const localizedLandingItems: Partial<Record<Language, {
+  opportunity: typeof opportunityPoints;
+  services: typeof services;
+  why: typeof whyPoints;
+  steps: typeof steps;
+  system: typeof systemFeatures;
+  pricingRows: string[];
+  shippingFeatures: string[];
+  storageFeatures: string[];
+}>> = {
+  fr: {
+    opportunity: [
+      { icon: Users, title: "Plus de 240 M d’habitants", desc: "La cinquième population mondiale : une immense base de consommateurs encore inexploitée." },
+      { icon: Banknote, title: "Le COD domine", desc: "Le paiement à la livraison domine l’e-commerce pakistanais et favorise les conversions." },
+      { icon: TrendingUp, title: "Croissance rapide", desc: "Une croissance annuelle à deux chiffres du commerce en ligne et mobile." },
+      { icon: MapPin, title: "Marché inexploité", desc: "Moins de concurrents, des CPM plus bas et des catégories encore ouvertes." },
+    ],
+    services: [
+      { icon: Search, title: "Sourcing de produits", desc: "Nous trouvons, validons et testons localement les produits gagnants." },
+      { icon: PhoneCall, title: "Confirmation des commandes", desc: "Des agents natifs avec des scripts éprouvés et une logique de relance." },
+      { icon: Warehouse, title: "Fulfillment et expédition", desc: "Préparation, emballage et étiquetage rapides et précis." },
+      { icon: Truck, title: "Livraison du dernier kilomètre", desc: "Couverture nationale avec des transporteurs de premier plan." },
+      { icon: Banknote, title: "Collecte COD", desc: "Des versements rapides et transparents directement sur votre portefeuille." },
+      { icon: RotateCcw, title: "Retours gratuits", desc: "Nous gérons la logistique inverse sans frais pour vous." },
+      { icon: Boxes, title: "Stockage gratuit", desc: "Stockez vos produits chez nous sans frais de stockage." },
+    ],
+    why: [
+      { icon: CheckCircle2, title: "Taux de confirmation élevé", desc: "Des agents formés et suivis qui convertissent efficacement les prospects." },
+      { icon: Truck, title: "Taux de livraison élevé", desc: "Routage intelligent, validation des adresses et contact proactif des clients." },
+      { icon: TrendingUp, title: "Modèle basé sur la performance", desc: "Vous payez uniquement lorsque nous performons. Notre réussite dépend de la vôtre." },
+      { icon: Activity, title: "Suivi en temps réel", desc: "Chaque commande, chaque statut et chaque paiement sont visibles 24 h/24." },
+    ],
+    steps: [
+      { icon: Rocket, title: "Lancer", desc: "Intégrez vos produits et démarrez en quelques jours." },
+      { icon: Headset, title: "Confirmer", desc: "Nos agents qualifient et sécurisent chaque commande." },
+      { icon: Truck, title: "Livrer", desc: "Nous préparons, expédions et livrons partout au Pakistan." },
+      { icon: Banknote, title: "Être payé", desc: "Le COD est collecté, rapproché et versé." },
+    ],
+    system: [
+      { icon: Package, title: "Suivi des commandes", desc: "Statut en direct de l’importation à la livraison, chaque étape étant enregistrée." },
+      { icon: Banknote, title: "Suivi des paiements", desc: "Chaque PKR est comptabilisé : factures, versements et ajustements." },
+      { icon: BarChart3, title: "Analyses", desc: "Tableaux de bord de confirmation, livraison et finance en un seul endroit." },
+    ],
+    pricingRows: ["Prospect", "Confirmée", "Livrée", "Vente additionnelle"],
+    shippingFeatures: ["Préparation et emballage", "Fulfillment", "Étiquetage", "Livraison nationale"],
+    storageFeatures: ["SKU illimités", "Traitement gratuit des retours", "Tableau de bord des stocks", "Aucun frais mensuel"],
+  },
+  ar: {
+    opportunity: [
+      { icon: Users, title: "أكثر من 240 مليون نسمة", desc: "خامس أكبر عدد سكان في العالم وقاعدة ضخمة من المستهلكين غير المستغلين." },
+      { icon: Banknote, title: "هيمنة الدفع عند الاستلام", desc: "يهيمن الدفع عند الاستلام على التجارة الإلكترونية في باكستان ويعزز التحويل." },
+      { icon: TrendingUp, title: "نمو سريع", desc: "نمو سنوي من رقمين في تجارة التجزئة عبر الإنترنت والتجارة عبر الهاتف." },
+      { icon: MapPin, title: "سوق غير مستغلة", desc: "منافسون أقل وتكاليف إعلانية أقل وفئات مفتوحة للريادة." },
+    ],
+    services: [
+      { icon: Search, title: "توريد المنتجات", desc: "نجد المنتجات الرابحة ونتحقق منها ونختبر أسعارها محليًا." },
+      { icon: PhoneCall, title: "تأكيد الطلبات", desc: "وكلاء ناطقون باللغة المحلية مع نصوص مجربة وآلية إعادة اتصال." },
+      { icon: Warehouse, title: "التجهيز والشحن", desc: "التقاط وتعبئة ووضع الملصقات بسرعة ودقة." },
+      { icon: Truck, title: "توصيل الميل الأخير", desc: "تغطية وطنية مع أفضل شركات التوصيل." },
+      { icon: Banknote, title: "تحصيل الدفع عند الاستلام", desc: "تحويلات سريعة وشفافة مباشرة إلى محفظتك." },
+      { icon: RotateCcw, title: "إرجاع مجاني", desc: "نتولى الخدمات اللوجستية العكسية دون تكلفة عليك." },
+      { icon: Boxes, title: "تخزين مجاني", desc: "خزّن بضاعتك لدينا دون رسوم تخزين." },
+    ],
+    why: [
+      { icon: CheckCircle2, title: "معدل تأكيد مرتفع", desc: "وكلاء مدربون وتحت المتابعة يحولون العملاء المحتملين بكفاءة." },
+      { icon: Truck, title: "معدل توصيل مرتفع", desc: "توجيه ذكي والتحقق من العناوين والتواصل الاستباقي مع العملاء." },
+      { icon: TrendingUp, title: "نموذج قائم على الأداء", desc: "تدفع فقط عندما نحقق النتائج. نجاحنا مرتبط بنجاحك." },
+      { icon: Activity, title: "تتبع لحظي", desc: "كل طلب وحالة ودفعة متاحة للمتابعة على مدار الساعة." },
+    ],
+    steps: [
+      { icon: Rocket, title: "الإطلاق", desc: "أضف منتجاتك وابدأ العمل خلال أيام." },
+      { icon: Headset, title: "التأكيد", desc: "يتحقق وكلاؤنا من كل طلب ويؤكدونه." },
+      { icon: Truck, title: "التوصيل", desc: "نجهز ونشحن ونوصل في جميع أنحاء باكستان." },
+      { icon: Banknote, title: "استلام الأرباح", desc: "نحصّل مدفوعات COD ونطابقها ونحولها إليك." },
+    ],
+    system: [
+      { icon: Package, title: "تتبع الطلبات", desc: "حالة مباشرة من الاستيراد إلى التسليم مع تسجيل كل خطوة." },
+      { icon: Banknote, title: "تتبع الأموال", desc: "تسجيل كل روبية باكستانية من الفواتير والتحويلات والتعديلات." },
+      { icon: BarChart3, title: "التحليلات", desc: "لوحات تأكيد وتسليم ومالية في مكان واحد." },
+    ],
+    pricingRows: ["عميل محتمل", "مؤكد", "تم التوصيل", "بيع إضافي"],
+    shippingFeatures: ["التقاط وتعبئة", "التجهيز", "وضع الملصقات", "توصيل على مستوى باكستان"],
+    storageFeatures: ["منتجات غير محدودة", "معالجة مجانية للإرجاع", "لوحة تحكم المخزون", "بدون رسوم شهرية"],
+  },
+};
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { language, t } = useI18n();
+  const localized = localizedLandingItems[language];
+  const localizedOpportunity = localized?.opportunity ?? opportunityPoints;
+  const localizedServices = localized?.services ?? services;
+  const localizedWhy = localized?.why ?? whyPoints;
+  const localizedSteps = localized?.steps ?? steps;
+  const localizedSystem = localized?.system ?? systemFeatures;
+  const pricingRows = localized?.pricingRows ?? ["Lead", "Confirmed", "Delivered", "Upsell"];
+  const shippingFeatures = localized?.shippingFeatures ?? ["Pick & Pack", "Fulfillment", "Labeling", "Nationwide delivery"];
+  const storageFeatures = localized?.storageFeatures ?? ["Unlimited SKUs", "Free returns processing", "Inventory dashboard", "Zero monthly fees"];
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#040814] text-white antialiased">
@@ -128,24 +227,19 @@ export default function LandingPage() {
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
-            <a href="#opportunity" className="hover:text-white transition">Opportunity</a>
-            <a href="#services" className="hover:text-white transition">Services</a>
-            <a href="#how" className="hover:text-white transition">How it works</a>
-            <a href="#pricing" className="hover:text-white transition">Pricing</a>
+            <a href="#opportunity" className="hover:text-white transition">{t("landing.navOpportunity")}</a>
+            <a href="#services" className="hover:text-white transition">{t("landing.navServices")}</a>
+            <a href="#how" className="hover:text-white transition">{t("landing.navHow")}</a>
+            <a href="#pricing" className="hover:text-white transition">{t("landing.navPricing")}</a>
           </nav>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/login")}
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white px-3 py-2 rounded-lg transition"
-            >
-              <LogIn className="w-4 h-4" /> Sign in
-            </button>
+            <LanguageSwitcher compact />
             <a
               onClick={(e) => { e.preventDefault(); navigate("/signup"); }}
               href="/signup"
               className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-[0_0_30px_rgba(56,128,255,0.5)] hover:shadow-[0_0_40px_rgba(56,128,255,0.8)] transition cursor-pointer"
             >
-              <Rocket className="w-4 h-4" /> Register
+              <Rocket className="w-4 h-4" /> {t("landing.register")}
             </a>
           </div>
         </div>
@@ -169,14 +263,14 @@ export default function LandingPage() {
             onClick={(e) => { e.preventDefault(); navigate("/signup"); }}
             className="group inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-[0_0_50px_rgba(56,128,255,0.6)] hover:shadow-[0_0_70px_rgba(56,128,255,0.9)] transition"
           >
-            Start Scaling Now
+            {t("landing.start")}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
             href="#cta"
             className="inline-flex items-center gap-2 px-7 py-4 rounded-xl border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08] transition"
           >
-            <PhoneCall className="w-4 h-4" /> Book a Call
+            <PhoneCall className="w-4 h-4" /> {t("landing.book")}
           </a>
         </div>
       </Reveal>
@@ -201,22 +295,22 @@ export default function LandingPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 text-blue-300 text-xs uppercase tracking-[0.25em] font-semibold mb-5">
               <span className="w-8 h-px bg-blue-400/60" />
-              The Opportunity
+              {t("landing.opportunityLabel")}
             </div>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-white leading-[1.05]">
-              Pakistan = Your Next{" "}
+              {t("landing.opportunityTitle")}{" "}
               <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-600 bg-clip-text text-transparent">
-                Growth Engine
+                {t("landing.opportunityAccent")}
               </span>
             </h2>
             <p className="text-white/75 text-lg md:text-xl leading-relaxed max-w-2xl">
-              While everyone fights over saturated markets, Pakistan is wide open — ready, willing and waiting.
+              {t("landing.opportunityText")}
             </p>
           </div>
 
           {/* Bottom: KPI cards anchored */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {opportunityPoints.map((p) => (
+            {localizedOpportunity.map((p) => (
               <div
                 key={p.title}
                 className="group relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-5 md:p-6 hover:border-blue-400/50 hover:bg-white/[0.08] transition-all duration-300 hover:-translate-y-1"
@@ -252,15 +346,15 @@ export default function LandingPage() {
       <Reveal id="services" className="relative py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">What We Do</div>
+            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.servicesLabel")}</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              A Full Stack Built for <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">COD Sellers</span>
+              {t("landing.servicesTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.servicesAccent")}</span>
             </h2>
-            <p className="text-white/70 text-lg">Every service you need to launch, run and grow — under one roof.</p>
+            <p className="text-white/70 text-lg">{t("landing.servicesText")}</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {services.map((s, i) => (
+            {localizedServices.map((s, i) => (
               <div
                 key={s.title}
                 className="group relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-6 hover:border-blue-400/40 transition overflow-hidden"
@@ -284,13 +378,13 @@ export default function LandingPage() {
       <Reveal className="relative py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">Why Scaller</div>
+            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.whyLabel")}</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Built to <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Win.</span>
+              {t("landing.whyTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.whyAccent")}</span>
             </h2>
-            <p className="text-white/70 text-lg mb-10">Performance is not a metric. It's the contract.</p>
+            <p className="text-white/70 text-lg mb-10">{t("landing.whyText")}</p>
             <div className="space-y-4">
-              {whyPoints.map((p) => (
+              {localizedWhy.map((p) => (
                 <div key={p.title} className="flex gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-blue-400/40 transition">
                   <div className="w-10 h-10 shrink-0 rounded-lg grid place-items-center bg-blue-500/15 border border-blue-400/30 text-blue-300">
                     <p.icon className="w-5 h-5" />
@@ -316,15 +410,15 @@ export default function LandingPage() {
       <Reveal id="how" className="relative py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">How It Works</div>
+            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.howLabel")}</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Four Steps. <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Zero Friction.</span>
+              {t("landing.howTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.howAccent")}</span>
             </h2>
           </div>
 
           <div className="relative grid md:grid-cols-4 gap-5">
             <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
-            {steps.map((s, i) => (
+            {localizedSteps.map((s, i) => (
               <div key={s.title} className="relative text-center">
                 <div className="relative mx-auto w-24 h-24 rounded-2xl grid place-items-center bg-gradient-to-br from-blue-500/20 to-blue-700/10 border border-blue-400/30 shadow-[0_0_40px_rgba(56,128,255,0.35)] mb-5">
                   <s.icon className="w-9 h-9 text-blue-300" />
@@ -350,15 +444,15 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="order-1 lg:order-2">
-            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">The System</div>
+            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.systemLabel")}</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Full Control. <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Real-Time Visibility.</span>
+              {t("landing.systemTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.systemAccent")}</span>
             </h2>
             <p className="text-white/70 text-lg mb-10 leading-relaxed">
               A purpose-built dashboard giving you live order, cash and analytics data — anytime, anywhere.
             </p>
             <div className="space-y-3">
-              {systemFeatures.map((f) => (
+              {localizedSystem.map((f) => (
                 <div key={f.title} className="flex items-start gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.03]">
                   <div className="w-9 h-9 shrink-0 rounded-lg grid place-items-center bg-blue-500/15 border border-blue-400/30 text-blue-300">
                     <f.icon className="w-4.5 h-4.5" />
@@ -378,11 +472,11 @@ export default function LandingPage() {
       <Reveal id="pricing" className="relative py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">Pricing</div>
+            <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.navPricing")}</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">
-              Clear. Simple. <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Transparent.</span>
+              {t("landing.pricingTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.pricingAccent")}</span>
             </h2>
-            <p className="text-white/70 text-lg">No hidden fees. No surprises. You pay for performance.</p>
+            <p className="text-white/70 text-lg">{t("landing.pricingText")}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -391,36 +485,34 @@ export default function LandingPage() {
               <div className="w-11 h-11 rounded-xl grid place-items-center bg-blue-500/15 border border-blue-400/30 text-blue-300 mb-5">
                 <Headset className="w-5 h-5" />
               </div>
-              <div className="text-sm uppercase tracking-wider text-white/50 mb-1">Call Center</div>
-              <div className="text-2xl font-bold mb-6">Per-action pricing</div>
+              <div className="text-sm uppercase tracking-wider text-white/50 mb-1">{t("landing.callCenter")}</div>
+              <div className="text-2xl font-bold mb-6">{t("landing.perAction")}</div>
               <ul className="space-y-3 text-sm">
-                {[
-                  ["Lead", "$0.20"],
-                  ["Confirmed", "$0.30"],
-                  ["Delivered", "FREE"],
-                  ["Upsell", "$2.00"],
-                ].map(([k, v]) => (
+                {["$0.20", "$0.30", "FREE", "$2.00"].map((v, index) => {
+                  const k = pricingRows[index];
+                  return (
                   <li key={k} className="flex items-center justify-between border-b border-white/5 pb-2.5">
                     <span className="text-white/70">{k}</span>
                     <span className="font-semibold text-blue-300 tabular-nums">{v}</span>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
 
             {/* Shipping (featured) */}
             <div className="relative rounded-3xl border border-blue-400/40 bg-gradient-to-b from-blue-500/15 to-blue-500/[0.02] p-8 shadow-[0_0_60px_rgba(56,128,255,0.35)]">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-500 text-white text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(56,128,255,0.7)]">
-                Most popular
+                {t("landing.mostPopular")}
               </div>
               <div className="w-11 h-11 rounded-xl grid place-items-center bg-blue-500/20 border border-blue-400/40 text-blue-200 mb-5">
                 <Truck className="w-5 h-5" />
               </div>
-              <div className="text-sm uppercase tracking-wider text-blue-200/80 mb-1">Shipping</div>
-              <div className="text-2xl font-bold mb-1">$3 <span className="text-base font-medium text-white/60">/ order (≤ 1KG)</span></div>
-              <div className="text-sm text-white/60 mb-6">+ $1 per additional KG</div>
+              <div className="text-sm uppercase tracking-wider text-blue-200/80 mb-1">{t("landing.shipping")}</div>
+              <div className="text-2xl font-bold mb-1">$3 <span className="text-base font-medium text-white/60">{t("landing.perOrder")}</span></div>
+              <div className="text-sm text-white/60 mb-6">{t("landing.additionalKg")}</div>
               <ul className="space-y-3 text-sm">
-                {["Pick & Pack", "Fulfillment", "Labeling", "Nationwide delivery"].map((x) => (
+                {shippingFeatures.map((x) => (
                   <li key={x} className="flex items-center gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-blue-300 shrink-0" />
                     <span className="text-white/80">{x}</span>
@@ -434,15 +526,10 @@ export default function LandingPage() {
               <div className="w-11 h-11 rounded-xl grid place-items-center bg-blue-500/15 border border-blue-400/30 text-blue-300 mb-5">
                 <Warehouse className="w-5 h-5" />
               </div>
-              <div className="text-sm uppercase tracking-wider text-white/50 mb-1">Storage</div>
-              <div className="text-2xl font-bold mb-6">FREE <span className="text-base font-medium text-white/60">forever</span></div>
+              <div className="text-sm uppercase tracking-wider text-white/50 mb-1">{t("landing.storage")}</div>
+              <div className="text-2xl font-bold mb-6">{t("landing.freeForever")}</div>
               <ul className="space-y-3 text-sm">
-                {[
-                  "Unlimited SKUs",
-                  "Free returns processing",
-                  "Inventory dashboard",
-                  "Zero monthly fees",
-                ].map((x) => (
+                {storageFeatures.map((x) => (
                   <li key={x} className="flex items-center gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-blue-300 shrink-0" />
                     <span className="text-white/80">{x}</span>
@@ -457,14 +544,14 @@ export default function LandingPage() {
       {/* ─── 10. VISION ─── */}
       <Reveal className="relative py-20 md:py-24">
         <div className="mx-auto max-w-6xl px-6 text-center">
-          <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">The Vision</div>
+          <div className="text-blue-300 text-xs uppercase tracking-[0.2em] font-semibold mb-4">{t("landing.visionLabel")}</div>
           <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            Start in Pakistan.
+            {t("landing.visionTitle")}
             <br />
-            <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-600 bg-clip-text text-transparent">Expand Everywhere.</span>
+            <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-600 bg-clip-text text-transparent">{t("landing.visionAccent")}</span>
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto mb-14">
-            Pakistan is the launchpad. The infrastructure is the rocket. The world is the destination.
+            {t("landing.visionText")}
           </p>
           <div className="relative max-w-5xl mx-auto">
             <div className="absolute inset-0 -m-8 bg-[radial-gradient(closest-side,rgba(56,128,255,0.45),transparent_70%)] blur-3xl" />
@@ -485,13 +572,13 @@ export default function LandingPage() {
             </div>
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 text-xs font-medium text-blue-200 mb-6">
-                <Zap className="w-3.5 h-3.5" /> Limited onboarding slots
+                <Zap className="w-3.5 h-3.5" /> {t("landing.ctaBadge")}
               </div>
               <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-5">
-                Ready to <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Scale?</span>
+                {t("landing.ctaTitle")} <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">{t("landing.ctaAccent")}</span>
               </h2>
               <p className="text-white/75 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-                Enter Pakistan in days, not months. Plug into our infrastructure and start shipping.
+                {t("landing.ctaText")}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <a
@@ -499,7 +586,7 @@ export default function LandingPage() {
                   onClick={(e) => { e.preventDefault(); navigate("/signup"); }}
                   className="group inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-[0_0_50px_rgba(56,128,255,0.6)] hover:shadow-[0_0_70px_rgba(56,128,255,0.9)] transition"
                 >
-                  Register as a Seller
+                  {t("landing.ctaButton")}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </a>
                 <a
@@ -528,12 +615,12 @@ export default function LandingPage() {
               </div>
             </div>
             <p className="text-sm text-white/55 max-w-xs">
-              3PL & e-commerce infrastructure helping sellers enter Pakistan and scale COD businesses.
+              {t("landing.footerText")}
             </p>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-wider text-white/40 mb-4">Contact</div>
+            <div className="text-xs uppercase tracking-wider text-white/40 mb-4">{t("landing.contact")}</div>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2.5 text-white/75">
                 <Globe2 className="w-4 h-4 text-blue-300" />
@@ -551,23 +638,18 @@ export default function LandingPage() {
           </div>
 
           <div className="md:text-right">
-            <div className="text-xs uppercase tracking-wider text-white/40 mb-4">Quick links</div>
+            <div className="text-xs uppercase tracking-wider text-white/40 mb-4">{t("landing.quickLinks")}</div>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#opportunity" className="text-white/75 hover:text-white">Opportunity</a></li>
-              <li><a href="#services" className="text-white/75 hover:text-white">Services</a></li>
-              <li><a href="#pricing" className="text-white/75 hover:text-white">Pricing</a></li>
-              <li>
-                <button onClick={() => navigate("/login")} className="text-white/75 hover:text-white">
-                  Sign in
-                </button>
-              </li>
+              <li><a href="#opportunity" className="text-white/75 hover:text-white">{t("landing.navOpportunity")}</a></li>
+              <li><a href="#services" className="text-white/75 hover:text-white">{t("landing.navServices")}</a></li>
+              <li><a href="#pricing" className="text-white/75 hover:text-white">{t("landing.navPricing")}</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/5">
           <div className="mx-auto max-w-7xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
-            <div>© {new Date().getFullYear()} Scaller. All rights reserved.</div>
-            <div>Built to scale beyond borders.</div>
+            <div>© {new Date().getFullYear()} Scaller. {t("landing.copyright")}</div>
+            <div>{t("landing.footerTagline")}</div>
           </div>
         </div>
       </footer>

@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/auth";
 import { supabase } from "../lib/supabase";
 import type { SellerApplication, SellerProfile } from "../lib/types";
 import { StatusBadge } from "../components/StatusBadge";
+import { useI18n } from "../contexts/i18n";
 
 type FormState = Omit<SellerProfile, "user_id"> & { message: string };
 
@@ -21,6 +22,7 @@ const emptyForm: FormState = {
 
 export function RegistrationPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [form, setForm] = useState<FormState>(emptyForm);
   const [application, setApplication] = useState<SellerApplication | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export function RegistrationPage() {
         supabase.from("seller_applications").select("id,user_id,status,message,submitted_at,created_at,updated_at").eq("user_id", user.id).maybeSingle(),
       ]);
       if (profileResult.error || applicationResult.error) {
-        setError("Deine Daten konnten nicht geladen werden. Bitte versuche es erneut.");
+        setError(t("register.loadError"));
       }
       const profile = profileResult.data as SellerProfile | null;
       const app = applicationResult.data as SellerApplication | null;
@@ -59,7 +61,7 @@ export function RegistrationPage() {
       setLoading(false);
     };
     void load();
-  }, [user]);
+  }, [t, user]);
 
   const progress = useMemo(() => {
     const required = [form.full_name, form.company_name, form.whatsapp, form.email, form.country, form.city, form.product_types, form.estimated_daily_orders];
@@ -92,16 +94,16 @@ export function RegistrationPage() {
       const insertResult = await supabase.from("seller_profiles").insert({ user_id: user.id, ...profilePayload });
       profileError = insertResult.error;
     }
-    if (profileError) { setSaving(false); setError("Profil konnte nicht gespeichert werden: " + profileError.message); return null; }
+    if (profileError) { setSaving(false); setError(t("register.profileSaveError")); return null; }
 
     let savedApplication = application;
     if (application) {
       const { data, error: applicationError } = await supabase.from("seller_applications").update({ message: form.message.trim() || null }).eq("id", application.id).select("id,user_id,status,message,submitted_at,created_at,updated_at").single();
-      if (applicationError) { setSaving(false); setError("Bewerbung konnte nicht gespeichert werden: " + applicationError.message); return null; }
+      if (applicationError) { setSaving(false); setError(t("register.applicationSaveError")); return null; }
       savedApplication = data as SellerApplication;
     } else {
       const { data, error: applicationError } = await supabase.from("seller_applications").insert({ user_id: user.id, message: form.message.trim() || null }).select("id,user_id,status,message,submitted_at,created_at,updated_at").single();
-      if (applicationError) { setSaving(false); setError("Bewerbung konnte nicht angelegt werden: " + applicationError.message); return null; }
+      if (applicationError) { setSaving(false); setError(t("register.applicationCreateError")); return null; }
       savedApplication = data as SellerApplication;
     }
     setApplication(savedApplication);
@@ -112,22 +114,22 @@ export function RegistrationPage() {
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
     const saved = await saveDraft();
-    if (saved) setMessage("Entwurf wurde sicher gespeichert.");
+    if (saved) setMessage(t("register.draftSaved"));
   };
 
   const handleSubmit = async () => {
     setError(""); setMessage("");
     if (!form.full_name || !form.company_name || !form.whatsapp || !form.country || !form.city || !form.product_types || !form.estimated_daily_orders) {
-      return setError("Bitte fülle alle Pflichtfelder aus, bevor du die Bewerbung einreichst.");
+      return setError(t("register.requiredError"));
     }
     const saved = await saveDraft();
     if (!saved) return;
     setSubmitting(true);
     const { error: submitError } = await supabase.rpc("submit_seller_application", { p_application_id: saved.id });
     setSubmitting(false);
-    if (submitError) return setError("Bewerbung konnte nicht eingereicht werden: " + submitError.message);
+    if (submitError) return setError(t("register.submitError"));
     setApplication({ ...saved, status: "submitted", submitted_at: new Date().toISOString() });
-    setMessage("Deine Bewerbung wurde erfolgreich eingereicht.");
+    setMessage(t("register.submittedSuccess"));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -136,46 +138,46 @@ export function RegistrationPage() {
   return (
     <section className="registration-page">
       <div className="registration-intro">
-        <div><div className="eyebrow">Seller Onboarding</div><h1>Dein Scaller-Profil</h1><p>Erzähle uns kurz von deinem Business. Pflichtfelder sind mit * markiert.</p></div>
-        <div className="application-state"><span>Aktueller Status</span><StatusBadge status={application?.status ?? "draft"} /></div>
+        <div><div className="eyebrow">Seller Onboarding</div><h1>{t("register.title")}</h1><p>{t("register.intro")}</p></div>
+        <div className="application-state"><span>{t("register.currentStatus")}</span><StatusBadge status={application?.status ?? "draft"} /></div>
       </div>
 
-      {application?.status === "submitted" && <div className="alert alert-info"><ClipboardCheck size={20} /><div><strong>Bewerbung eingereicht</strong><br />Unser Team wird deine Angaben prüfen. Bis dahin ist das Formular gesperrt.</div></div>}
-      {application?.status === "under_review" && <div className="alert alert-info"><ShieldCheck size={20} /><div><strong>Deine Bewerbung wird geprüft</strong><br />Wir melden uns, sobald es ein Update gibt.</div></div>}
-      {application?.status === "approved" && <div className="alert alert-success"><CheckCircle2 size={20} /><div><strong>Willkommen bei Scaller!</strong><br />Deine Bewerbung wurde genehmigt. Unser Team kontaktiert dich für die nächsten Schritte.</div></div>}
-      {application?.status === "rejected" && <div className="alert alert-error"><AlertCircle size={20} /><div><strong>Bewerbung nicht angenommen</strong><br />Kontaktiere unser Team, wenn du Rückfragen zur Entscheidung hast.</div></div>}
-      {application?.status === "needs_more_info" && <div className="alert alert-warning"><AlertCircle size={20} /><div><strong>Weitere Angaben benötigt</strong><br />Bitte aktualisiere dein Profil und reiche es erneut ein.</div></div>}
+      {application?.status === "submitted" && <div className="alert alert-info"><ClipboardCheck size={20} /><div><strong>{t("register.submittedTitle")}</strong><br />{t("register.submittedText")}</div></div>}
+      {application?.status === "under_review" && <div className="alert alert-info"><ShieldCheck size={20} /><div><strong>{t("register.reviewTitle")}</strong><br />{t("register.reviewText")}</div></div>}
+      {application?.status === "approved" && <div className="alert alert-success"><CheckCircle2 size={20} /><div><strong>{t("register.approvedTitle")}</strong><br />{t("register.approvedText")}</div></div>}
+      {application?.status === "rejected" && <div className="alert alert-error"><AlertCircle size={20} /><div><strong>{t("register.rejectedTitle")}</strong><br />{t("register.rejectedText")}</div></div>}
+      {application?.status === "needs_more_info" && <div className="alert alert-warning"><AlertCircle size={20} /><div><strong>{t("register.moreInfoTitle")}</strong><br />{t("register.moreInfoText")}</div></div>}
       {message && <div className="alert alert-success"><CheckCircle2 size={18} />{message}</div>}
       {error && <div className="alert alert-error" role="alert"><AlertCircle size={18} />{error}</div>}
 
       <div className="registration-layout">
         <form className="form-card" onSubmit={handleSave}>
-          <div className="form-section-heading"><span>01</span><div><h2>Persönliche Angaben</h2><p>Deine Kontaktdaten für das Onboarding.</p></div></div>
+          <div className="form-section-heading"><span>01</span><div><h2>{t("register.personalTitle")}</h2><p>{t("register.personalText")}</p></div></div>
           <div className="form-grid">
-            <label className="field"><span>Vollständiger Name *</span><input required disabled={!editable} value={form.full_name} onChange={(e) => setField("full_name", e.target.value)} placeholder="Vor- und Nachname" /></label>
-            <label className="field"><span>Firmenname / Shopname *</span><input required disabled={!editable} value={form.company_name} onChange={(e) => setField("company_name", e.target.value)} placeholder="Name deines Shops" /></label>
-            <label className="field"><span>WhatsApp Nummer *</span><input required disabled={!editable} value={form.whatsapp} onChange={(e) => setField("whatsapp", e.target.value)} placeholder="+212 6 00 00 00 00" /></label>
-            <label className="field"><span>E-Mail *</span><input type="email" disabled value={form.email} /></label>
+            <label className="field"><span>{t("register.fullName")}</span><input required disabled={!editable} value={form.full_name} onChange={(e) => setField("full_name", e.target.value)} placeholder={t("register.fullNamePlaceholder")} /></label>
+            <label className="field"><span>{t("register.company")}</span><input required disabled={!editable} value={form.company_name} onChange={(e) => setField("company_name", e.target.value)} placeholder={t("register.companyPlaceholder")} /></label>
+            <label className="field"><span>{t("register.whatsapp")}</span><input className="input-ltr" required disabled={!editable} value={form.whatsapp} onChange={(e) => setField("whatsapp", e.target.value)} placeholder="+212 6 00 00 00 00" /></label>
+            <label className="field"><span>{t("common.email")} *</span><input className="input-ltr" type="email" disabled value={form.email} /></label>
           </div>
 
           <div className="form-divider" />
-          <div className="form-section-heading"><span>02</span><div><h2>Business-Informationen</h2><p>Hilf uns, dein aktuelles Setup einzuschätzen.</p></div></div>
+          <div className="form-section-heading"><span>02</span><div><h2>{t("register.businessTitle")}</h2><p>{t("register.businessText")}</p></div></div>
           <div className="form-grid">
-            <label className="field"><span>Land *</span><input required disabled={!editable} value={form.country} onChange={(e) => setField("country", e.target.value)} placeholder="z. B. Marokko" /></label>
-            <label className="field"><span>Stadt *</span><input required disabled={!editable} value={form.city} onChange={(e) => setField("city", e.target.value)} placeholder="z. B. Casablanca" /></label>
-            <label className="field field-wide"><span>Art der Produkte *</span><input required disabled={!editable} value={form.product_types} onChange={(e) => setField("product_types", e.target.value)} placeholder="z. B. Beauty, Electronics, Home & Living" /></label>
-            <label className="field field-wide"><span>Geschätzte tägliche Orders *</span><select required disabled={!editable} value={form.estimated_daily_orders ?? ""} onChange={(e) => setField("estimated_daily_orders", e.target.value ? Number(e.target.value) : null)}><option value="">Bitte auswählen</option><option value="5">1–10 Orders</option><option value="25">11–50 Orders</option><option value="75">51–100 Orders</option><option value="250">101–500 Orders</option><option value="750">Mehr als 500 Orders</option></select></label>
-            <label className="field field-wide"><span>Bemerkung / Nachricht</span><textarea disabled={!editable} rows={5} value={form.message} onChange={(e) => setField("message", e.target.value)} placeholder="Was sollten wir über dein Business oder deine Pläne wissen?" /></label>
+            <label className="field"><span>{t("register.country")}</span><input required disabled={!editable} value={form.country} onChange={(e) => setField("country", e.target.value)} placeholder={t("register.countryPlaceholder")} /></label>
+            <label className="field"><span>{t("register.city")}</span><input required disabled={!editable} value={form.city} onChange={(e) => setField("city", e.target.value)} placeholder={t("register.cityPlaceholder")} /></label>
+            <label className="field field-wide"><span>{t("register.products")}</span><input required disabled={!editable} value={form.product_types} onChange={(e) => setField("product_types", e.target.value)} placeholder={t("register.productsPlaceholder")} /></label>
+            <label className="field field-wide"><span>{t("register.orders")}</span><select required disabled={!editable} value={form.estimated_daily_orders ?? ""} onChange={(e) => setField("estimated_daily_orders", e.target.value ? Number(e.target.value) : null)}><option value="">{t("common.select")}</option><option value="5">1–10</option><option value="25">11–50</option><option value="75">51–100</option><option value="250">101–500</option><option value="750">{t("register.ordersMore")}</option></select></label>
+            <label className="field field-wide"><span>{t("register.message")}</span><textarea disabled={!editable} rows={5} value={form.message} onChange={(e) => setField("message", e.target.value)} placeholder={t("register.messagePlaceholder")} /></label>
           </div>
 
-          {editable && <div className="form-actions"><button type="submit" className="button button-secondary" disabled={saving || submitting}><Save size={17} />{saving ? "Speichern …" : "Entwurf speichern"}</button><button type="button" className="button button-primary" onClick={handleSubmit} disabled={saving || submitting}>{submitting ? "Einreichen …" : <>Bewerbung einreichen <Send size={17} /></>}</button></div>}
+          {editable && <div className="form-actions"><button type="submit" className="button button-secondary" disabled={saving || submitting}><Save size={17} />{saving ? t("register.saving") : t("register.save")}</button><button type="button" className="button button-primary" onClick={handleSubmit} disabled={saving || submitting}>{submitting ? t("register.submitting") : <>{t("register.submit")} <Send size={17} /></>}</button></div>}
         </form>
 
         <aside className="progress-card">
           <div className="progress-ring" style={{ "--progress": `${progress * 3.6}deg` } as React.CSSProperties}><span>{progress}%</span></div>
-          <h3>Profilfortschritt</h3><p>Fülle alle Pflichtfelder aus, um deine Bewerbung einzureichen.</p>
-          <ul><li className={form.full_name && form.company_name ? "done" : ""}><span>{form.full_name && form.company_name ? <CheckCircle2 /> : <ChevronRight />}</span>Persönliche Angaben</li><li className={form.country && form.city && form.product_types ? "done" : ""}><span>{form.country && form.city && form.product_types ? <CheckCircle2 /> : <ChevronRight />}</span>Business-Informationen</li><li className={application?.status !== "draft" && application ? "done" : ""}><span>{application?.status !== "draft" && application ? <CheckCircle2 /> : <ChevronRight />}</span>Bewerbung einreichen</li></ul>
-          <div className="privacy-note"><ShieldCheck size={18} /><span>Deine Daten sind durch Supabase Auth und Row Level Security geschützt.</span></div>
+          <h3>{t("register.progress")}</h3><p>{t("register.progressText")}</p>
+          <ul><li className={form.full_name && form.company_name ? "done" : ""}><span>{form.full_name && form.company_name ? <CheckCircle2 /> : <ChevronRight />}</span>{t("register.personalTitle")}</li><li className={form.country && form.city && form.product_types ? "done" : ""}><span>{form.country && form.city && form.product_types ? <CheckCircle2 /> : <ChevronRight />}</span>{t("register.businessTitle")}</li><li className={application?.status !== "draft" && application ? "done" : ""}><span>{application?.status !== "draft" && application ? <CheckCircle2 /> : <ChevronRight />}</span>{t("register.submit")}</li></ul>
+          <div className="privacy-note"><ShieldCheck size={18} /><span>{t("register.privacy")}</span></div>
         </aside>
       </div>
     </section>

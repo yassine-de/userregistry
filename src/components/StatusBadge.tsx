@@ -1,14 +1,7 @@
 import type { ApplicationStatus } from "../lib/types";
-
-const labels: Record<ApplicationStatus, string> = {
-  draft: "Entwurf",
-  submitted: "Eingereicht",
-  under_review: "In Prüfung",
-  approved: "Genehmigt",
-  rejected: "Abgelehnt",
-  needs_more_info: "Weitere Angaben nötig",
-};
+import { useI18n } from "../contexts/i18n";
 
 export function StatusBadge({ status }: { status: ApplicationStatus }) {
-  return <span className={`status-badge status-${status}`}>{labels[status]}</span>;
+  const { t } = useI18n();
+  return <span className={`status-badge status-${status}`}>{t(`status.${status}`)}</span>;
 }

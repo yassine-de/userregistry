@@ -9,6 +9,7 @@ Eigenständige Seller-Registrierung für **Scaller / COD Manager Pakistan**. Das
 - zwingende E-Mail-Verifizierung vor Zugriff auf das Seller-Formular
 - Auth-Callback unter `/auth/callback`
 - Seite zum erneuten Senden der Bestätigungs-E-Mail
+- vollständige Sprachumschaltung für Englisch, Französisch und Arabisch inklusive RTL-Layout
 - Seller-Formular mit Entwurfsfunktion und Statusanzeige
 - serverseitig abgesicherte Einreichung über eine Supabase-RPC
 - SQL-Migration mit RLS, Indizes, Status-Historie und Admin-Vorbereitung
