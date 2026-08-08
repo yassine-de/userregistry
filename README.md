@@ -4,7 +4,7 @@ Eigenständige Seller-Registrierung für **Scaller / COD Manager Pakistan**. Das
 
 ## Enthalten
 
-- Öffentliche Scaller-Landingpage mit übernommenem Dark/Blue-Branding
+- Vollständige bestehende Scaller-Landingpage mit identischer Section-Struktur, Bildwelt und Dark/Blue-Branding
 - Registrierung und Login über Supabase Auth
 - zwingende E-Mail-Verifizierung vor Zugriff auf das Seller-Formular
 - Auth-Callback unter `/auth/callback`
