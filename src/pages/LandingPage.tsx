@@ -9,9 +9,13 @@ import {
 } from "lucide-react";
 
 import heroImg from "../assets/scaller-hero-banner.png";
+import heroImgFr from "../assets/scaller-hero-banner-fr.png";
+import heroImgAr from "../assets/scaller-hero-banner-ar.png";
 import opportunityImg from "../assets/scalers-opportunity.jpg";
 import problemImg from "../assets/scalers-problem.jpg";
 import solutionImg from "../assets/scalers-solution.jpg";
+import solutionImgFr from "../assets/scaller-solution-fr.png";
+import solutionImgAr from "../assets/scaller-solution-ar.png";
 import servicesImg from "../assets/scalers-services.jpg";
 import whyImg from "../assets/scalers-why.jpg";
 import howImg from "../assets/scalers-howitworks.jpg";
@@ -186,6 +190,18 @@ const localizedLandingItems: Partial<Record<Language, {
 export default function LandingPage() {
   const navigate = useNavigate();
   const { language, t } = useI18n();
+  const localizedHeroImg = language === "fr" ? heroImgFr : language === "ar" ? heroImgAr : heroImg;
+  const localizedSolutionImg = language === "fr" ? solutionImgFr : language === "ar" ? solutionImgAr : solutionImg;
+  const localizedHeroAlt = language === "fr"
+    ? "Scaller — Grandir au-delà des frontières. Lancez et développez votre activité COD au Pakistan."
+    : language === "ar"
+      ? "سكالر — توسّع بلا حدود. أطلق ووسّع أعمال الدفع عند الاستلام في باكستان."
+      : "Scaller — Scale Beyond Borders. Launch and scale your COD business in Pakistan.";
+  const localizedSolutionAlt = language === "fr"
+    ? "Solution e-commerce de bout en bout : approvisionnement, centre d’appels, fulfillment, livraison et encaissement COD."
+    : language === "ar"
+      ? "حل متكامل للتجارة الإلكترونية: التوريد، مركز الاتصال، التجهيز، التوصيل وتحصيل الدفع عند الاستلام."
+      : "End-to-end ecommerce solution: sourcing, call center, fulfillment, delivery and COD collection.";
   const localized = localizedLandingItems[language];
   const localizedOpportunity = localized?.opportunity ?? opportunityPoints;
   const localizedServices = localized?.services ?? services;
@@ -249,8 +265,8 @@ export default function LandingPage() {
       <Reveal id="hero" className="relative">
         <div className="relative w-full">
           <img
-            src={heroImg}
-            alt="Scaller — Scale Beyond Borders. Launch & scale your COD business in Pakistan."
+            src={localizedHeroImg}
+            alt={localizedHeroAlt}
             width={1536}
             height={1024}
             className="w-screen h-auto block"
@@ -331,8 +347,8 @@ export default function LandingPage() {
         <div className="relative w-full">
           {/* Hero infographic image carries the message */}
           <img
-            src={solutionImg}
-            alt="End-to-end ecommerce solution: Sourcing, Call Center, Fulfillment, Delivery, Cash Collection"
+            src={localizedSolutionImg}
+            alt={localizedSolutionAlt}
             loading="lazy"
             className="block w-full h-auto"
           />
