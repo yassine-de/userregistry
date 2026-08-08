@@ -1,6 +1,6 @@
 import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { authCallbackUrl, isSupabaseConfigured, supabase } from "../lib/supabase";
 import { useI18n } from "../contexts/i18n";
 
@@ -42,7 +42,6 @@ export function SignUpPage() {
         <label className="field"><span>{t("common.password")}</span><span className="input-wrap"><LockKeyhole /><input type="password" autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("signup.passwordHint")} /></span></label>
         <label className="field"><span>{t("signup.confirmPassword")}</span><span className="input-wrap"><LockKeyhole /><input type="password" autoComplete="new-password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t("signup.repeatPassword")} /></span></label>
         <button className="button button-primary button-full" disabled={loading}>{loading ? t("signup.submitting") : <>{t("signup.submit")} <ArrowRight size={17} /></>}</button>
-        <p className="form-footnote">{t("signup.existing")} <Link to="/login">{t("signup.login")}</Link></p>
       </form>
     </AuthCard>
   );
